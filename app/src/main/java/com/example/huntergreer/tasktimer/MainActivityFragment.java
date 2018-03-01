@@ -64,11 +64,14 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "onLoadFinished: starts");
-        mAdapter.swapCursor(data);
+        Log.d(TAG, "******************************************");
+        Log.d(TAG, "onLoaderFinished() method called");
         int count = mAdapter.getItemCount();
-
-        Log.d(TAG, "onLoadFinished: count is " + count);
+        Log.d(TAG, "onLoadFinished: count before swapCursor() called = " + count);
+        mAdapter.swapCursor(data);
+        count = mAdapter.getItemCount();
+        Log.d(TAG, "onLoadFinished: count after swapCursor() called = " + count);
+        Log.d(TAG, "******************************************");
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example.huntergreer.tasktimer;
 
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,10 +39,30 @@ class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecyclerViewA
             if (!mCursor.moveToPosition(position)) {
                 throw new IllegalStateException("Couldn't move cursor to position " + position);
             }
-            holder.name.setText(mCursor.getString(mCursor.getColumnIndex(TasksContract.Columns.TASKS_NAME)));
-            holder.description.setText(mCursor.getString(mCursor.getColumnIndex(TasksContract.Columns.TASKS_DESCRIPTION)));
+
+            final Task task = new Task(mCursor.getLong(mCursor.getColumnIndex(TasksContract.Columns._ID)),
+                    mCursor.getString(mCursor.getColumnIndex(TasksContract.Columns.TASKS_NAME)),
+                    mCursor.getString(mCursor.getColumnIndex(TasksContract.Columns.TASKS_DESCRIPTION)),
+                    mCursor.getInt(mCursor.getColumnIndex(TasksContract.Columns.TASKS_SORTORDER)));
+
+            holder.name.setText(task.getName());
+            holder.description.setText(task.getDescription());
             holder.editButton.setVisibility(View.VISIBLE);       // TODO add onClickListener
             holder.deleteButton.setVisibility(View.VISIBLE);     // TODO add onClickListener
+
+//            View.OnClickListener buttonListener = new View.OnClickListener() {
+            class Listener implements View.OnClickListener {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: starts");
+                    Log.d(TAG, "onClick: button with " + v.getId() + "touched");
+                    Log.d(TAG, "onClick: task name " + task.getName() + "touched");
+                }
+            }
+
+            Listener buttonListener = new Listener();
+            holder.editButton.setOnClickListener(buttonListener);
+            holder.deleteButton.setOnClickListener(buttonListener);
         }
     }
 
