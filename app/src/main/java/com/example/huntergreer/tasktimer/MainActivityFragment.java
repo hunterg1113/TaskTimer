@@ -9,7 +9,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,24 +26,21 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private CursorRecyclerViewAdapter mAdapter;
 
     public MainActivityFragment() {
-        Log.d(TAG, "MainActivityFragment: starts");
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated: starts");
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: starts");
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.task_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mAdapter = new CursorRecyclerViewAdapter(null);
+        mAdapter = new CursorRecyclerViewAdapter(null, (CursorRecyclerViewAdapter.OnTaskClickListener) getActivity());
         recyclerView.setAdapter(mAdapter);
 
         return view;
@@ -64,14 +60,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "******************************************");
-        Log.d(TAG, "onLoaderFinished() method called");
-        int count = mAdapter.getItemCount();
-        Log.d(TAG, "onLoadFinished: count before swapCursor() called = " + count);
         mAdapter.swapCursor(data);
-        count = mAdapter.getItemCount();
-        Log.d(TAG, "onLoadFinished: count after swapCursor() called = " + count);
-        Log.d(TAG, "******************************************");
     }
 
     @Override

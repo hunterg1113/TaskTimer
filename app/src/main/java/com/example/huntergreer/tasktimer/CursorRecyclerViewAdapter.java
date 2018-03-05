@@ -2,7 +2,6 @@ package com.example.huntergreer.tasktimer;
 
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +17,17 @@ class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecyclerViewA
 
     private Cursor mCursor;
 
-    public CursorRecyclerViewAdapter(Cursor cursor) {
+    private OnTaskClickListener mListener;
+
+    interface OnTaskClickListener {
+        void onEditClick(Task task);
+
+        void onDeleteClick(Task task);
+    }
+
+    public CursorRecyclerViewAdapter(Cursor cursor, OnTaskClickListener onTaskClickListener) {
         mCursor = cursor;
+        mListener = onTaskClickListener;
     }
 
     @Override
@@ -47,20 +55,25 @@ class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecyclerViewA
 
             holder.name.setText(task.getName());
             holder.description.setText(task.getDescription());
-            holder.editButton.setVisibility(View.VISIBLE);       // TODO add onClickListener
-            holder.deleteButton.setVisibility(View.VISIBLE);     // TODO add onClickListener
+            holder.editButton.setVisibility(View.VISIBLE);
+            holder.deleteButton.setVisibility(View.VISIBLE);
 
-//            View.OnClickListener buttonListener = new View.OnClickListener() {
-            class Listener implements View.OnClickListener {
+            View.OnClickListener buttonListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "onClick: starts");
-                    Log.d(TAG, "onClick: button with " + v.getId() + "touched");
-                    Log.d(TAG, "onClick: task name " + task.getName() + "touched");
+                    switch (v.getId()) {
+                        case R.id.tli_edit:
+                            if (mListener != null) mListener.onEditClick(task);
+                            break;
+                        case R.id.tli_delete:
+                            if (mListener != null) mListener.onDeleteClick(task);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Cannot find button id: " + v.getId());
+                    }
                 }
-            }
+            };
 
-            Listener buttonListener = new Listener();
             holder.editButton.setOnClickListener(buttonListener);
             holder.deleteButton.setOnClickListener(buttonListener);
         }

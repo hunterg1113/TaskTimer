@@ -1,29 +1,42 @@
 package com.example.huntergreer.tasktimer;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdapter.OnTaskClickListener,
+        AddEditActivityFragment.OnSaveClicked, AppDialog.DialogEvents {
+
     private static final String TAG = "MainActivity";
 
     //    Whether or not activity is in 2-pane mode, i.e. running in
     //    landscape on a tablet
     private boolean mTwoPane = false;
 
-    private static final String ADD_EDIT_FRAGMENT = "AddEditFragment";
+    public static final int DIALOG_ID_DELETE = 1;
+    public static final int DIALOG_ID_CANCEL_EDIT = 2;
+
+    private AlertDialog mDialog = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, ": starts");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (findViewById(R.id.task_details_container) != null) mTwoPane = true;
     }
 
     @Override
@@ -45,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menumain_settings:
                 break;
             case R.id.menumain_showAbout:
+                showAboutDialog();
                 break;
             case R.id.menumain_generate:
                 break;
@@ -53,13 +67,34 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("SetTextI18n")
+    public void showAboutDialog() {
+        @SuppressLint("InflateParams") View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.app_name);
+        builder.setIcon(R.mipmap.ic_launcher);
+
+        builder.setView(messageView);
+
+        mDialog = builder.create();
+        mDialog.setCanceledOnTouchOutside(true);
+
+        TextView tv = (TextView) messageView.findViewById(R.id.about_version);
+        tv.setText("v" + BuildConfig.VERSION_NAME);
+
+        mDialog.show();
+    }
+
     private void taskEditRequest(Task task) {
         if (mTwoPane) {
-            Log.d(TAG, "taskEditRequest: in 2-pane mode tablet");
-        } else {
-            Log.d(TAG, "taskEditRequest: in single-pane mode tablet");
+            AddEditActivityFragment fragment = new AddEditActivityFragment();
 
-            // In single-pane mode, start the detail activity for the selected item Id
+            Bundle args = new Bundle();
+            args.putSerializable(Task.class.getSimpleName(), task);
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction().replace(R.id.task_details_container, fragment).commit();
+        } else {
             Intent detailIntent = new Intent(this, AddEditActivity.class);
             if (task != null) { // editing a task
                 detailIntent.putExtra(Task.class.getSimpleName(), task);
@@ -67,6 +102,94 @@ public class MainActivity extends AppCompatActivity {
             } else { // adding a new task
                 startActivity(detailIntent);
             }
+        }
+    }
+
+    @Override
+    public void onEditClick(Task task) {
+        taskEditRequest(task);
+    }
+
+    @Override
+    public void onDeleteClick(Task task) {
+        AppDialog appDialog = new AppDialog();
+        Bundle args = new Bundle();
+        args.putInt(AppDialog.DIALOG_ID, DIALOG_ID_DELETE);
+        args.putString(AppDialog.DIALOG_MESSAGE, getString(R.string.deldiag_message, task.getId(), task.getName()));
+        args.putInt(AppDialog.DIALOG_POSITIVE_RID, R.string.deldiag_positive_caption);
+        args.putLong("TaskId", task.getId());
+
+        appDialog.setArguments(args);
+        appDialog.show(getFragmentManager(), null);
+
+    }
+
+    @Override
+    public void onSaveClicked() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentById(R.id.task_details_container);
+        if (fragment != null) {
+            fragmentManager.beginTransaction().remove(fragment).commit();
+        }
+    }
+
+    @Override
+    public void onPositiveDialogResult(int dialogId, Bundle args) {
+        Log.d(TAG, "onPositiveDialogResult: called");
+        switch (dialogId) {
+            case DIALOG_ID_DELETE:
+                long taskId = args.getLong("TaskId");
+                if (BuildConfig.DEBUG && taskId == 0) throw new AssertionError("Task id is zero");
+                getContentResolver().delete(TasksContract.buildTaskUri(taskId), null, null);
+                break;
+            case DIALOG_ID_CANCEL_EDIT:
+                //no action required
+                break;
+        }
+    }
+
+    @Override
+    public void onNegativeDialogResult(int dialogId, Bundle args) {
+        Log.d(TAG, "onNegativeDialogResult: called");
+        switch (dialogId) {
+            case DIALOG_ID_DELETE:
+                //no action required
+                break;
+            case DIALOG_ID_CANCEL_EDIT:
+                finish();
+                break;
+        }
+    }
+
+    @Override
+    public void onDialogCancelled(int dialogId) {
+        Log.d(TAG, "onDialogCancelled: called");
+    }
+
+    @Override
+    public void onBackPressed() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AddEditActivityFragment fragment = (AddEditActivityFragment) fragmentManager.findFragmentById(R.id.task_details_container);
+        if (fragment == null || fragment.canClose()) {
+            super.onBackPressed();
+        } else {
+            AppDialog dialog = new AppDialog();
+            Bundle args = new Bundle();
+            args.putInt(AppDialog.DIALOG_ID, DIALOG_ID_CANCEL_EDIT);
+            args.putString(AppDialog.DIALOG_MESSAGE, getString(R.string.cancelEditDiag_message));
+            args.putInt(AppDialog.DIALOG_POSITIVE_RID, R.string.cancelEditDiag_positive_caption);
+            args.putInt(AppDialog.DIALOG_NEGATIVE_RID, R.string.cancelEditDiag_negative_caption);
+
+            dialog.setArguments(args);
+            dialog.show(getFragmentManager(), null);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
         }
     }
 }
