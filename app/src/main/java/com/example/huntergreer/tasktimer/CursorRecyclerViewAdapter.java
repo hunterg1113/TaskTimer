@@ -30,6 +30,10 @@ class CursorRecyclerViewAdapter extends RecyclerView.Adapter<CursorRecyclerViewA
         mListener = onTaskClickListener;
     }
 
+//    public void setListener(OnTaskClickListener listener) {
+//        mListener = listener;
+//    }
+
     @Override
     public TaskViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.task_list_items, parent, false);

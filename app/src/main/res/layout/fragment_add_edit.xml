@@ -5,8 +5,7 @@
     android:id="@+id/content_add_edit"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.huntergreer.tasktimer.AddEditActivityFragment"
-    tools:showIn="@layout/activity_add_edit">
+    tools:context="com.example.huntergreer.tasktimer.AddEditActivityFragment">
 
     <EditText
         android:id="@+id/addedit_name"

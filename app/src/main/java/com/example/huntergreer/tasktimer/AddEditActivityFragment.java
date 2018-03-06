@@ -1,11 +1,15 @@
 package com.example.huntergreer.tasktimer;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,16 +21,13 @@ import android.widget.EditText;
  */
 
 public class AddEditActivityFragment extends Fragment {
-    private static final String TAG = "AddEditActivityFragment";
-
-    public enum FragmentEditMode {EDIT, ADD}
+    private enum FragmentEditMode {EDIT, ADD}
 
     private FragmentEditMode mMode;
 
     private EditText mNameTextView;
     private EditText mDescriptionTextView;
     private EditText mSortOrderTextView;
-    private Button mSaveButton;
     private OnSaveClicked mSaveListener;
 
     interface OnSaveClicked {
@@ -47,18 +48,33 @@ public class AddEditActivityFragment extends Fragment {
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mSaveListener = null;
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mSaveListener = null;
+
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_edit, container, false);
-        mNameTextView = (EditText) view.findViewById(R.id.addedit_name);
-        mDescriptionTextView = (EditText) view.findViewById(R.id.addedit_description);
-        mSortOrderTextView = (EditText) view.findViewById(R.id.addedit_sortorder);
-        mSaveButton = (Button) view.findViewById(R.id.addedit_save);
+        mNameTextView = view.findViewById(R.id.addedit_name);
+        mDescriptionTextView = view.findViewById(R.id.addedit_description);
+        mSortOrderTextView = view.findViewById(R.id.addedit_sortorder);
+        Button saveButton = view.findViewById(R.id.addedit_save);
 
         Bundle args = getArguments();
 
@@ -79,7 +95,7 @@ public class AddEditActivityFragment extends Fragment {
             mMode = FragmentEditMode.ADD;
         }
 
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Update db if at least one field is changed
@@ -95,6 +111,10 @@ public class AddEditActivityFragment extends Fragment {
                 ContentValues values = new ContentValues();
                 switch (mMode) {
                     case EDIT:
+                        if (task == null) {
+                            //remove lint warnings, will never execute
+                            break;
+                        }
                         if (!mNameTextView.getText().toString().equals(task.getName())) {
                             values.put(TasksContract.Columns.TASKS_NAME, mNameTextView.getText().toString());
                         }
@@ -124,8 +144,6 @@ public class AddEditActivityFragment extends Fragment {
         });
         return view;
     }
-
-
 
     public boolean canClose() {
         return false;
