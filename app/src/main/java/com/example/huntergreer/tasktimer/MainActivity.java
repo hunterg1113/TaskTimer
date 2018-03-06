@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
         args.putLong("TaskId", task.getId());
 
         appDialog.setArguments(args);
-        appDialog.show(getFragmentManager(), null);
+        appDialog.show(getSupportFragmentManager(), null);
 
     }
 
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             args.putInt(AppDialog.DIALOG_NEGATIVE_RID, R.string.cancelEditDiag_negative_caption);
 
             dialog.setArguments(args);
-            dialog.show(getFragmentManager(), null);
+            dialog.show(getSupportFragmentManager(), null);
         }
     }
 
@@ -251,5 +251,11 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        Log.d(TAG, "onAttachFragment: onAttachFragment called, fragment is " + fragment.toString());
+        super.onAttachFragment(fragment);
     }
 }

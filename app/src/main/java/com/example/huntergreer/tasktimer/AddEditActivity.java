@@ -22,15 +22,17 @@ public class AddEditActivity extends AppCompatActivity implements AddEditActivit
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        AddEditActivityFragment fragment = new AddEditActivityFragment();
+        if (getSupportFragmentManager().findFragmentById(R.id.add_edit_frame_layout) == null) {
+            AddEditActivityFragment fragment = new AddEditActivityFragment();
 
-        Bundle args = getIntent().getExtras();
-        fragment.setArguments(args);
+            Bundle args = getIntent().getExtras();
+            fragment.setArguments(args);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.add_edit_frame_layout, fragment);
-        fragmentTransaction.commit();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.add_edit_frame_layout, fragment);
+            fragmentTransaction.commit();
+        }
     }
 
     @Override
@@ -87,6 +89,6 @@ public class AddEditActivity extends AppCompatActivity implements AddEditActivit
         args.putInt(AppDialog.DIALOG_NEGATIVE_RID, R.string.cancelEditDiag_negative_caption);
 
         dialog.setArguments(args);
-        dialog.show(getFragmentManager(), null);
+        dialog.show(getSupportFragmentManager(), null);
     }
 }
