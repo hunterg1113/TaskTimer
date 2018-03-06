@@ -24,7 +24,9 @@
     <string name="cancelEditDiag_positive_caption">Continue editing</string>
     <string name="cancelEditDiag_negative_caption">Abandon changes</string>
     <string name="about_copyright">Copyright © 2018 hunter.example</string>
-    <string name="about_weblink">Instructions available at: www.github.com/hunterg1113</string>
+    <string name="about_weblink">Instructions available at:</string>
+    <string name="about_url"><u>http://www.github.com/hunterg1113</u></string>
+    <string name="about_weblink_21">Instructions available at: www.github.com/hunterg1113</string>
     <string name="about_email">For support, email tasktimer@example.com</string>
     <string name="about_credits">Icon derived from <b>analog clock</b> at openclipart.org by <b>Anonymous</b></string>
 </resources>

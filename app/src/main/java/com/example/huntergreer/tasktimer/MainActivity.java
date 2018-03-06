@@ -1,7 +1,10 @@
 package com.example.huntergreer.tasktimer;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdapter.OnTaskClickListener,
         AddEditActivityFragment.OnSaveClicked, AppDialog.DialogEvents {
@@ -76,15 +80,71 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
 
         builder.setView(messageView);
 
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mDialog != null && mDialog.isShowing()) {
+                    mDialog.dismiss();
+                }
+            }
+        });
+
         mDialog = builder.create();
         mDialog.setCanceledOnTouchOutside(true);
 
         TextView tv = (TextView) messageView.findViewById(R.id.about_version);
         tv.setText("v" + BuildConfig.VERSION_NAME);
 
+        TextView aboutUrl = (TextView) messageView.findViewById(R.id.about_url);
+        if (aboutUrl != null) {
+            aboutUrl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    String s = ((TextView) v).getText().toString();
+                    browserIntent.setData(Uri.parse(s));
+                    try {
+                        startActivity(browserIntent);
+                    } catch (ActivityNotFoundException e) {
+                        Toast.makeText(MainActivity.this, "No browser application found or URL is invalid", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+
         mDialog.show();
     }
 
+    /*
+        @SuppressLint("SetTextI18n")
+        public void showAboutDialog() {
+            @SuppressLint("InflateParams") View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.app_name);
+            builder.setIcon(R.mipmap.ic_launcher);
+
+            builder.setView(messageView);
+
+            mDialog = builder.create();
+            mDialog.setCanceledOnTouchOutside(true);
+
+            messageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: isShowing() = " + mDialog.isShowing());
+                    if (mDialog != null && mDialog.isShowing()) {
+                        mDialog.dismiss();
+                    }
+                }
+            });
+
+            TextView tv = (TextView) messageView.findViewById(R.id.about_version);
+            tv.setText("v" + BuildConfig.VERSION_NAME);
+
+            mDialog.show();
+        }
+
+    */
     private void taskEditRequest(Task task) {
         if (mTwoPane) {
             AddEditActivityFragment fragment = new AddEditActivityFragment();
